@@ -9,8 +9,9 @@ CandleChartWidget::CandleChartWidget(QWidget *parent) : QWidget(parent) {
               << "1h" << "2h" << "4h" << "6h" << "8h" << "12h"
               << "1d" << "3d" << "1w" << "1M";
     currentIntervalIndex = intervals.indexOf("15m");
-    currentLimit = 100;
+    currentLimit = 50;
     symbol = "SOLUSDT";
+    setMouseTracking(true);
 }
 
 void CandleChartWidget::setCandles(const QVector<CandleData> &data) {
@@ -106,7 +107,27 @@ void CandleChartWidget::paintEvent(QPaintEvent *) {
     p.setPen(percent >= 0 ? Qt::green : Qt::red);
     p.drawText(priceTextWidth + (textSpacing * 2), h - 8, priceText);
 
-    QPen pen(Qt::darkGray);
+    if (rect().contains(mousePos)) {
+        double rel = 1.0 - (double)mousePos.y() / chartHeight;
+        double hoverPrice = minPrice + rel * (maxPrice - minPrice);
+
+        if (hoverPrice < maxPrice && hoverPrice > minPrice) {
+            QPen pen(Qt::white);
+            p.setPen(pen);
+
+            int yHigh = chartHeight - static_cast<int>((hoverPrice - minPrice) / (maxPrice - minPrice) * chartHeight);
+
+            p.drawLine(0, yHigh, w, yHigh);
+
+            QFont font("Arial", 8, QFont::Bold);
+            p.setFont(font);
+            double percent = std::abs(hoverPrice - currentPrice) / currentPrice * 100.0;
+            QString priceText = QString("%1 (%2%)").arg(QString::number(hoverPrice, 'f', 2)).arg(QString::number(percent, 'f', 2));
+            p.drawText(10, yHigh - 5, priceText);
+        }
+    }
+
+    QPen pen(Qt::white);
     pen.setStyle(Qt::DashLine);
     p.setPen(pen);
     p.drawLine(0, lastCloseY, w, lastCloseY);
@@ -176,4 +197,15 @@ void CandleChartWidget::mousePressEvent(QMouseEvent *event) {
     } else {
         QWidget::mousePressEvent(event);
     }
+}
+
+void CandleChartWidget::mouseMoveEvent(QMouseEvent *event)
+{
+    mousePos = event->pos();
+    update();
+}
+
+void CandleChartWidget::leaveEvent(QEvent *) {
+    mousePos = QPoint(-1, -1);
+    update();
 }

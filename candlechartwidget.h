@@ -23,6 +23,8 @@ signals:
 protected:
     void paintEvent(QPaintEvent *) override;
     void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void leaveEvent(QEvent *) override;
 
 private:
     QVector<CandleData> candles;
@@ -35,6 +37,7 @@ private:
     QRect limitRect;
     QRect betRect;
     double newBet = 0;
+    QPoint mousePos;
 };
 
 #endif // CANDLECHARTWIDGET_H
