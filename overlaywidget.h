@@ -2,7 +2,7 @@
 #define OVERLAYWIDGET_H
 
 #include <QWidget>
-#include "candlechartwidget.h"
+#include "windowpainter.h"
 #include "binanceclient.h"
 
 class OverlayWidget : public QWidget {
@@ -18,7 +18,7 @@ protected:
 private:
     bool dragging = false;
     QPoint dragStart;
-    CandleChartWidget *chart;
+    WindowPainter *winPainter;
     BinanceClient *client;
 };
 

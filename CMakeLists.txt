@@ -18,8 +18,6 @@ set(PROJECT_SOURCES
     overlaywidget.h
     binanceclient.cpp
     binanceclient.h
-    candlechartwidget.cpp
-    candlechartwidget.h
     candledata.h
 )
 
@@ -41,11 +39,12 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ${PROJECT_SOURCES}
         appicon.ico
 
-        candlechartwidget.h candlechartwidget.cpp
+
         binanceclient.h binanceclient.cpp
         candledata.h
-        candlechartwidget.h candlechartwidget.cpp
         overlaywidget.h overlaywidget.cpp
+        windowpainter.h windowpainter.cpp
+        config.h config.cpp
     )
 else()
     if(ANDROID)

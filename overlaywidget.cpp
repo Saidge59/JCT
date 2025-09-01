@@ -1,8 +1,12 @@
-#include "overlaywidget.h"
 #include <QTimer>
 #include <QApplication>
 #include <QScreen>
 #include <QMouseEvent>
+
+#include "overlaywidget.h"
+#include "config.h"
+
+#define CONFIG_FILE "config.ini"
 
 OverlayWidget::OverlayWidget() {
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
@@ -13,28 +17,32 @@ OverlayWidget::OverlayWidget() {
     QIcon icon(":/appicon.ico");
     setWindowIcon(icon);
 
-    chart = new CandleChartWidget(this);
-    chart->setGeometry(0, 0, width(), height());
+    Config config;
+    config.LoadSettings(CONFIG_FILE);
+
+    winPainter = new WindowPainter(this);
+    winPainter->setGeometry(0, 0, width(), height());
+    winPainter->setConfig(config);
 
     client = new BinanceClient(this);
-    connect(client, &BinanceClient::candlesReceived, chart, &CandleChartWidget::setCandles);
-    connect(chart, &CandleChartWidget::intervalChanged, this, [this](const QString &interval) {
-        client->fetchCandles(chart->getCurrentSymbol(), interval, chart->getCurrentLimit());
+    connect(client, &BinanceClient::candlesReceived, winPainter, &WindowPainter::setCandles);
+    connect(winPainter, &WindowPainter::intervalChanged, this, [this](const QString &interval) {
+        client->fetchCandles(winPainter->getCurrentSymbol(), interval, winPainter->getCurrentLimit());
     });
-    connect(chart, &CandleChartWidget::limitChanged, this, [this](int limit) {
-        client->fetchCandles(chart->getCurrentSymbol(), chart->getCurrentInterval(), limit);
+    connect(winPainter, &WindowPainter::limitChanged, this, [this](int limit) {
+        client->fetchCandles(winPainter->getCurrentSymbol(), winPainter->getCurrentInterval(), limit);
     });
-    connect(chart, &CandleChartWidget::symbolChanged, this, [this](const QString &symbol) {
-        client->fetchCandles(symbol, chart->getCurrentInterval(), chart->getCurrentLimit());
+    connect(winPainter, &WindowPainter::symbolChanged, this, [this](const QString &symbol) {
+        client->fetchCandles(symbol, winPainter->getCurrentInterval(), winPainter->getCurrentLimit());
     });
 
     QTimer *timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, [this]() {
-        client->fetchCandles(chart->getCurrentSymbol(), chart->getCurrentInterval(), chart->getCurrentLimit());
+        client->fetchCandles(winPainter->getCurrentSymbol(), winPainter->getCurrentInterval(), winPainter->getCurrentLimit());
     });
     timer->start(5000);
 
-    client->fetchCandles(chart->getCurrentSymbol(), chart->getCurrentInterval(), chart->getCurrentLimit()); // сразу при старте
+    client->fetchCandles(winPainter->getCurrentSymbol(), winPainter->getCurrentInterval(), winPainter->getCurrentLimit());
 
     QScreen *screen = QGuiApplication::primaryScreen();
     QRect avail = screen->availableGeometry();
