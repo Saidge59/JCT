@@ -18,6 +18,9 @@ void Config::LoadSettings(QString fname)
         return;
     }
 
+    screenWidth = settings.value("ScreenWidth").toInt();
+    screenHeight = settings.value("ScreenHeight").toInt();
+
     symbolDef = settings.value("SymbolDef").toString();
     intervalDef = settings.value("IntervalDef").toString();
     limitCandleDef = settings.value("LimitCandleDef").toInt();
@@ -37,7 +40,12 @@ void Config::LoadSettings(QString fname)
     lineUserColor = settings.value("LineUserColor").toString();
     linePositionColor = settings.value("LinePositionColor").toString();
 
-    priceBull = settings.value("PriceBull").toString();
-    priceBear = settings.value("PriceBear").toString();
+    priceBullColor = settings.value("PriceBullColor").toString();
+    priceBearColor = settings.value("PriceBearColor").toString();
+
+    if(screenWidth < 200) screenWidth = 200;
+    if(screenHeight < 200) screenHeight = 200;
+    if(beakgroundAlpha < 1) beakgroundAlpha = 1;
+    if(limitCandleDef < 10) limitCandleDef = 10;
 }
 

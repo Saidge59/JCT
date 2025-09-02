@@ -11,6 +11,7 @@
 #define TEXT_SPACING        10
 #define CANDLE_SPACING_X    5
 #define CANDLE_SPACING_Y    20
+#define ALPHA_RECT          150
 
 class WindowPainter : public QWidget {
     Q_OBJECT
@@ -42,6 +43,7 @@ private:
     QColor candleBearColor;
     QColor volumeBullColor;
     QColor volumeBearColor;
+    double candleWidth;
     QVector<CandleData> candles;
     QStringList intervals;
     int currentIntervalIndex;
@@ -55,15 +57,18 @@ private:
     QPoint mousePos;
     double maxPrice;
     double minPrice;
+    int maxIndex = 0;
+    int minIndex = 0;
     double maxVolume;
     double currentPrice;
     int chartHeight;
 
     void paintCandles(QPainter &p);
-    void drawLabeledLine(QPainter &p, Qt::PenStyle style, int chartHeight, double value,
-                         double minPrice, double maxPrice,
+    void drawLabeledLine(QPainter &p, Qt::PenStyle style, double value,
                          int w, QColor lineColor, QColor textColor,
                          const QString &label, int xOffset = 10);
+    void drawLabeledMaxMin(QPainter &p, double valueX, double valueY,
+                                          int w, QColor color, const QString &label);
 };
 
 #endif // WINDOWPAINTER_H

@@ -9,16 +9,15 @@
 #define CONFIG_FILE "config.ini"
 
 OverlayWidget::OverlayWidget() {
+    Config config;
+    config.LoadSettings(CONFIG_FILE);
+
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
     setAttribute(Qt::WA_TranslucentBackground);
-    resize(400, 300);
-    setWindowOpacity(0.9);
+    resize(config.screenWidth, config.screenHeight);
 
     QIcon icon(":/appicon.ico");
     setWindowIcon(icon);
-
-    Config config;
-    config.LoadSettings(CONFIG_FILE);
 
     winPainter = new WindowPainter(this);
     winPainter->setGeometry(0, 0, width(), height());

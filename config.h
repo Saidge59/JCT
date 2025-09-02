@@ -5,6 +5,9 @@
 class Config
 {
 public:
+    int screenWidth;
+    int screenHeight;
+
     QString symbolDef;
     QString intervalDef;
     int limitCandleDef;
@@ -24,8 +27,8 @@ public:
     QString lineUserColor;
     QString linePositionColor;
 
-    QString priceBull;
-    QString priceBear;
+    QString priceBullColor;
+    QString priceBearColor;
 
     Config();
     void LoadSettings(QString fname);

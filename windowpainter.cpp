@@ -38,11 +38,21 @@ void WindowPainter::setCandles(const QVector<CandleData> &data) {
     maxPrice = candles[0].high;
     minPrice = candles[0].low;
     maxVolume = candles[0].volume;
-    for (auto &c : candles) {
-        if (c.high > maxPrice) maxPrice = c.high;
-        if (c.low < minPrice) minPrice = c.low;
-        if (c.volume > maxVolume) maxVolume = c.volume;
+    maxIndex = 0;
+    minIndex = 0;
+
+    for(int i = 0; i < candles.size(); ++i) {
+        if(candles[i].high > maxPrice) {
+            maxPrice = candles[i].high;
+            maxIndex = i;
+        }
+        if(candles[i].low < minPrice) {
+            minPrice = candles[i].low;
+            minIndex = i;
+        }
+        if(candles[i].volume > maxVolume) maxVolume = candles[i].volume;
     }
+
 
     const CandleData &last = candles.last();
     currentPrice = last.close;
@@ -51,7 +61,7 @@ void WindowPainter::setCandles(const QVector<CandleData> &data) {
 }
 
 void WindowPainter::paintCandles(QPainter &p) {
-    double candleWidth = static_cast<double>(width() - CANDLE_SPACING_X*2) / candles.size();
+    candleWidth = static_cast<double>(width() - CANDLE_SPACING_X*2) / candles.size();
 
     for (int i = 0; i < candles.size(); i++) {
         const CandleData &c = candles[i];
@@ -84,6 +94,17 @@ void WindowPainter::paintCandles(QPainter &p) {
         QRect volRect(CANDLE_SPACING_X + x + static_cast<int>(candleWidth / 4), height() - TEXT_AREA - volHeight, bodyWidth, volHeight);
         p.fillRect(volRect, QColor(color.red(), color.green(), color.blue(), config.volumeAlpha));
     }
+
+    auto indexToX = [&](int idx) {
+        return CANDLE_SPACING_X + static_cast<int>(idx * candleWidth + candleWidth / 2);
+    };
+
+    drawLabeledMaxMin(p, indexToX(maxIndex), maxPrice,
+                      width(), config.lineUserColor,
+                      QString("%1").arg(maxPrice, 0, 'f', 2));
+    drawLabeledMaxMin(p, indexToX(minIndex), minPrice,
+                      width(), config.lineUserColor,
+                      QString("%1").arg(minPrice, 0, 'f', 2));
 }
 
 void WindowPainter::paintEvent(QPaintEvent *) {
@@ -102,8 +123,7 @@ void WindowPainter::paintEvent(QPaintEvent *) {
     double percent = (last.close - last.open) / last.open * 100.0;
 
     if(newBet > 0 && newBet < maxPrice && newBet > minPrice) {
-        drawLabeledLine(p, Qt::SolidLine, chartHeight, newBet, minPrice, maxPrice,
-                        w, config.linePositionColor, config.linePositionColor,
+        drawLabeledLine(p, Qt::SolidLine, newBet, w, config.linePositionColor, config.linePositionColor,
                         QString::number(newBet, 'f', 2));
     }
 
@@ -113,15 +133,13 @@ void WindowPainter::paintEvent(QPaintEvent *) {
         double percent = std::abs(hoverPrice - currentPrice) / currentPrice * 100.0;
 
         if (hoverPrice < maxPrice && hoverPrice > minPrice) {
-            drawLabeledLine(p, Qt::DotLine, chartHeight, hoverPrice, minPrice, maxPrice,
-                            w, config.lineUserColor, config.lineUserColor,
+            drawLabeledLine(p, Qt::DotLine, hoverPrice, w, config.lineUserColor, config.lineUserColor,
                             QString("%1 (%2%)").arg(QString::number(hoverPrice, 'f', 2))
                                 .arg(QString::number(percent, 'f', 2)), mousePos.x());
         }
     }
 
-    drawLabeledLine(p, Qt::DashLine, chartHeight, currentPrice, minPrice, maxPrice,
-                    w, config.lineCurrentPriceColor, config.lineCurrentPriceColor,
+    drawLabeledLine(p, Qt::DashLine, currentPrice, w, config.lineCurrentPriceColor, config.lineCurrentPriceColor,
                     QString("%1").arg(QString::number(currentPrice, 'f', 2)));
 
     QFont font("Arial", 14, QFont::Bold);
@@ -133,8 +151,8 @@ void WindowPainter::paintEvent(QPaintEvent *) {
     symbolRect = QRect(10, h - TEXT_AREA, fm.horizontalAdvance(name), TEXT_AREA);
     p.drawText(TEXT_SPACING, h - 8, name);
 
-    QColor bullColor(config.priceBull);
-    QColor bearColor(config.priceBear);
+    QColor bullColor(config.priceBullColor);
+    QColor bearColor(config.priceBearColor);
 
     QString priceText = QString(QString::number(currentPrice, 'f', 2));
     int priceTextWidth = fm.horizontalAdvance(name);
@@ -165,12 +183,11 @@ void WindowPainter::paintEvent(QPaintEvent *) {
     p.drawText(limitRect, Qt::AlignLeft | Qt::AlignVCenter, limitText);
 }
 
-void WindowPainter::drawLabeledLine(QPainter &p, Qt::PenStyle style, int chartHeight, double value,
-                                        double minPrice, double maxPrice,
+void WindowPainter::drawLabeledLine(QPainter &p, Qt::PenStyle style, double value,
                                         int w, QColor lineColor, QColor textColor,
                                         const QString &label, int xOffset)
 {
-    if (value <= minPrice || value >= maxPrice)
+    if (value < minPrice || value > maxPrice)
         return;
 
     int yHigh = chartHeight - static_cast<int>((value - minPrice) / (maxPrice - minPrice) * chartHeight);
@@ -189,11 +206,43 @@ void WindowPainter::drawLabeledLine(QPainter &p, Qt::PenStyle style, int chartHe
 
     int x = xOffset;
     if (x + tw + 10 > width()) x = width() - tw - 10;
+    int y = (yHigh < th + 4) ? yHigh + 4: yHigh - th - 4;
 
-    QRect r(x, yHigh - th - 4, tw, th + 4);
-    p.fillRect(r, QColor(0,0,0,150));
+    QRect r(x, y, tw, th + 4);
+    p.fillRect(r, QColor(0,0,0,ALPHA_RECT));
 
     p.setPen(textColor);
+    p.drawText(r, Qt::AlignVCenter, label);
+}
+
+void WindowPainter::drawLabeledMaxMin(QPainter &p, double valueX, double valueY,
+                                    int w, QColor color,
+                                    const QString &label)
+{
+    if (valueY < minPrice || valueY > maxPrice)
+        return;
+
+    int yHigh = chartHeight - static_cast<int>((valueY - minPrice) / (maxPrice - minPrice) * chartHeight);
+
+    QFont font("Arial", 8, QFont::Bold);
+    p.setFont(font);
+
+    QFontMetrics fm(p.fontMetrics());
+    int tw = fm.horizontalAdvance(label);
+    int th = fm.height();
+
+    int x = (valueX < width() / 2) ? valueX + candleWidth * 2: valueX - tw - candleWidth * 2;
+    int y = (yHigh < height() / 2) ? yHigh : yHigh - th;
+
+    QPen pen(color);
+    pen.setStyle(Qt::SolidLine);
+    p.setPen(pen);
+    p.drawLine(valueX, yHigh, (valueX < width() / 2) ? x : x + tw, yHigh);
+
+    QRect r(x, y, tw, th + 4);
+    p.fillRect(r, QColor(0,0,0,ALPHA_RECT));
+
+    p.setPen(color);
     p.drawText(r, Qt::AlignVCenter, label);
 }
 
