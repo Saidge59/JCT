@@ -100,11 +100,11 @@ void WindowPainter::paintCandles(QPainter &p) {
     };
 
     drawLabeledMaxMin(p, indexToX(maxIndex), maxPrice,
-                      width(), config.lineUserColor,
-                      QString("%1").arg(maxPrice, 0, 'f', 2));
+                      width(), config.priceMaxColor,
+                      QString("%1").arg(maxPrice, 0, 'f', decimals));
     drawLabeledMaxMin(p, indexToX(minIndex), minPrice,
-                      width(), config.lineUserColor,
-                      QString("%1").arg(minPrice, 0, 'f', 2));
+                      width(), config.priceMinColor,
+                      QString("%1").arg(minPrice, 0, 'f', decimals));
 }
 
 void WindowPainter::paintEvent(QPaintEvent *) {
@@ -124,7 +124,7 @@ void WindowPainter::paintEvent(QPaintEvent *) {
 
     if(newBet > 0 && newBet < maxPrice && newBet > minPrice) {
         drawLabeledLine(p, Qt::SolidLine, newBet, w, config.linePositionColor, config.linePositionColor,
-                        QString::number(newBet, 'f', 2));
+                        QString::number(newBet, 'f', decimals));
     }
 
     if (rect().contains(mousePos)) {
@@ -134,13 +134,13 @@ void WindowPainter::paintEvent(QPaintEvent *) {
 
         if (hoverPrice < maxPrice && hoverPrice > minPrice) {
             drawLabeledLine(p, Qt::DotLine, hoverPrice, w, config.lineUserColor, config.lineUserColor,
-                            QString("%1 (%2%)").arg(QString::number(hoverPrice, 'f', 2))
-                                .arg(QString::number(percent, 'f', 2)), mousePos.x());
+                            QString("%1 (%2%)").arg(QString::number(hoverPrice, 'f', decimals))
+                                .arg(QString::number(percent, 'f', decimals)), mousePos.x());
         }
     }
 
     drawLabeledLine(p, Qt::DashLine, currentPrice, w, config.lineCurrentPriceColor, config.lineCurrentPriceColor,
-                    QString("%1").arg(QString::number(currentPrice, 'f', 2)));
+                    QString("%1").arg(QString::number(currentPrice, 'f', decimals)));
 
     QFont font("Arial", 14, QFont::Bold);
     p.setFont(font);
@@ -154,7 +154,7 @@ void WindowPainter::paintEvent(QPaintEvent *) {
     QColor bullColor(config.priceBullColor);
     QColor bearColor(config.priceBearColor);
 
-    QString priceText = QString(QString::number(currentPrice, 'f', 2));
+    QString priceText = QString(QString::number(currentPrice, 'f', decimals));
     int priceTextWidth = fm.horizontalAdvance(name);
     p.setPen(percent >= 0 ? bullColor : bearColor);
     p.drawText(priceTextWidth + (TEXT_SPACING * 2), h - 8, priceText);
@@ -209,7 +209,7 @@ void WindowPainter::drawLabeledLine(QPainter &p, Qt::PenStyle style, double valu
     int y = (yHigh < th + 4) ? yHigh + 4: yHigh - th - 4;
 
     QRect r(x, y, tw, th + 4);
-    p.fillRect(r, QColor(0,0,0,ALPHA_RECT));
+    //p.fillRect(r, QColor(0,0,0,ALPHA_RECT));
 
     p.setPen(textColor);
     p.drawText(r, Qt::AlignVCenter, label);
@@ -240,7 +240,7 @@ void WindowPainter::drawLabeledMaxMin(QPainter &p, double valueX, double valueY,
     p.drawLine(valueX, yHigh, (valueX < width() / 2) ? x : x + tw, yHigh);
 
     QRect r(x, y, tw, th + 4);
-    p.fillRect(r, QColor(0,0,0,ALPHA_RECT));
+    //p.fillRect(r, QColor(0,0,0,ALPHA_RECT));
 
     p.setPen(color);
     p.drawText(r, Qt::AlignVCenter, label);
@@ -279,7 +279,7 @@ void WindowPainter::mousePressEvent(QMouseEvent *event) {
         bool ok;
         newBet = QInputDialog::getDouble(this, "Change Bet",
                                          "Enter new bet:",
-                                         newBet, 0.0, 1000000.0, 2, &ok);
+                                         newBet, 0.0, 1000000.0, decimals, &ok);
     } else {
         QWidget::mousePressEvent(event);
     }

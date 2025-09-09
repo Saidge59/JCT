@@ -12,11 +12,15 @@ public:
 
     void fetchCandles(const QString &symbol, const QString &interval, int limit);
 
+    int countSignificantDecimals(const QString &numStr);
+
 signals:
     void candlesReceived(const QVector<CandleData> &candles);
+    void candlesDecimals(int decimals);
 
 private:
     QNetworkAccessManager *manager;
+    int decimals;
 };
 
 #endif // BINANCECLIENT_H

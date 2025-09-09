@@ -25,6 +25,8 @@ OverlayWidget::OverlayWidget() {
 
     client = new BinanceClient(this);
     connect(client, &BinanceClient::candlesReceived, winPainter, &WindowPainter::setCandles);
+    connect(client, &BinanceClient::candlesDecimals, winPainter, &WindowPainter::setDecimals);
+
     connect(winPainter, &WindowPainter::intervalChanged, this, [this](const QString &interval) {
         client->fetchCandles(winPainter->getCurrentSymbol(), interval, winPainter->getCurrentLimit());
     });

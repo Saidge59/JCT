@@ -20,6 +20,7 @@ public:
 
     void setConfig(Config &config);
     void setCandles(const QVector<CandleData> &data);
+    void setDecimals(int dec) { decimals = dec; }
 
     QString getCurrentInterval() const { return intervals[currentIntervalIndex]; }
     int getCurrentLimit() const { return currentLimit; }
@@ -62,6 +63,7 @@ private:
     double maxVolume;
     double currentPrice;
     int chartHeight;
+    int decimals;
 
     void paintCandles(QPainter &p);
     void drawLabeledLine(QPainter &p, Qt::PenStyle style, double value,

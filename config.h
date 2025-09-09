@@ -30,6 +30,9 @@ public:
     QString priceBullColor;
     QString priceBearColor;
 
+    QString priceMaxColor;
+    QString priceMinColor;
+
     Config();
     void LoadSettings(QString fname);
     int precToByte(int val) { return val * 255 / 100; }

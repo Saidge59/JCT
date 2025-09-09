@@ -43,6 +43,9 @@ void Config::LoadSettings(QString fname)
     priceBullColor = settings.value("PriceBullColor").toString();
     priceBearColor = settings.value("PriceBearColor").toString();
 
+    priceMaxColor = settings.value("PriceMaxColor").toString();
+    priceMinColor = settings.value("PriceMinColor").toString();
+
     if(screenWidth < 200) screenWidth = 200;
     if(screenHeight < 200) screenHeight = 200;
     if(beakgroundAlpha < 1) beakgroundAlpha = 1;
