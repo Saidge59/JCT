@@ -21,6 +21,8 @@ void Config::LoadSettings(QString fname)
     screenWidth = settings.value("ScreenWidth").toInt();
     screenHeight = settings.value("ScreenHeight").toInt();
 
+    viewSymbols = settings.value("ViewSymbols").toStringList();
+
     symbolDef = settings.value("SymbolDef").toString();
     intervalDef = settings.value("IntervalDef").toString();
     limitCandleDef = settings.value("LimitCandleDef").toInt();

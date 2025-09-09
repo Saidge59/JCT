@@ -10,6 +10,7 @@ WindowPainter::WindowPainter(QWidget *parent) : QWidget(parent) {
               << "1h" << "2h" << "4h" << "6h" << "8h" << "12h"
               << "1d" << "3d" << "1w" << "1M";
     setMouseTracking(true);
+    currentSymbolIndex = 0;
 }
 
 void WindowPainter::setConfig(Config &conf) {
@@ -249,15 +250,26 @@ void WindowPainter::drawLabeledMaxMin(QPainter &p, double valueX, double valueY,
 
 void WindowPainter::mousePressEvent(QMouseEvent *event) {
     if (symbolRect.contains(event->pos())) {
-        bool ok;
-        QString newSymbol = QInputDialog::getText(this, "Change Symbol",
-                                                  "Enter new symbol:",
-                                                  QLineEdit::Normal, symbol, &ok);
-        if (ok && !newSymbol.isEmpty()) {
-            if(symbol != newSymbol.toUpper()) newBet = 0;
-            symbol = newSymbol.toUpper();
-            emit symbolChanged(symbol);
-            update();
+        if (event->button() == Qt::LeftButton) {
+            bool ok;
+            QString newSymbol = QInputDialog::getText(this, "Change Symbol",
+                                                      "Enter new symbol:",
+                                                      QLineEdit::Normal, symbol, &ok);
+            if (ok && !newSymbol.isEmpty()) {
+                if(symbol != newSymbol.toUpper()) newBet = 0;
+                symbol = newSymbol.toUpper();
+                emit symbolChanged(symbol);
+                update();
+            }
+        } else if (event->button() == Qt::RightButton) {
+            if (symbolRect.contains(event->pos())) {
+                if (!config.viewSymbols.isEmpty()) {
+                    currentSymbolIndex = (currentSymbolIndex + 1) % config.viewSymbols.size();
+                    symbol = config.viewSymbols.at(currentSymbolIndex);
+                    emit symbolChanged(symbol.toUpper());
+                    update();
+                }
+            }
         }
     } else if (intervalRect.contains(event->pos())) {
         if (event->button() == Qt::LeftButton) {

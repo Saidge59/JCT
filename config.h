@@ -1,6 +1,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
+
 #include <QString>
+#include <QStringList>
 
 class Config
 {
@@ -32,6 +34,8 @@ public:
 
     QString priceMaxColor;
     QString priceMinColor;
+
+    QStringList viewSymbols;
 
     Config();
     void LoadSettings(QString fname);

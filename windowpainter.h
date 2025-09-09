@@ -64,6 +64,7 @@ private:
     double currentPrice;
     int chartHeight;
     int decimals;
+    int currentSymbolIndex;
 
     void paintCandles(QPainter &p);
     void drawLabeledLine(QPainter &p, Qt::PenStyle style, double value,
